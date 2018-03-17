@@ -1,125 +1,85 @@
-// Add requirements
-var express    = require('express')
-    bodyParser = require('body-parser'),
-    request    = require('request');
+/* eslint linebreak-style: ['error', 'windows'] */
 
-// Variables
-var config = {
-  port:      3000,
-  product:   'XXXX',
-  publicId: 'XXXX',
-  secretKey: 'XXXX',
-  bttnKey:   'XXXX',
-  callback:  undefined,
-  customer: {
-    first_name: 'Jon',
-    last_name:  'Doe',
-    email:      'jon.doe@gmail.com'
+// Imports
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const request = require('request');
+const moltinHelper = require('./utils/manual_moltin');
+const { BTTN_API_KEY } = process.env.BTTN_API_KEY;
+const config = {
+  port: 3000,
+  callback: undefined
+};
+
+// Setup the response to bt.tn
+const options = {
+  url: config.callback,
+  method: 'POST',
+  json: true,
+  time : true,
+  headers: {
+    'X-Api-Key': BTTN_API_KEY,
   },
-  address: {
-    first_name: 'Jon',
-    last_name:  'Doe',
-    address_1:  '123 Sunny Street',
-    address_2:  'Sunnycreek',
-    city:       'Sunnyvale',
-    county:     'California',
-    country:    'US',
-    postcode:   'CA94040',
-    phone:      '6507123124'
+  body: {
+    result: 'success',
   },
-  card: {
-    number:       '4242424242424242',
-    expiry_month: '02',
-    expiry_year:  '2017',
-    cvv:          '123'
-  }
 };
 
 // Start Express
-var bttn = express();
+const bttn = express();
 
 // Configure JSON and Form handlers
 bttn.use(bodyParser.json());
-bttn.use(bodyParser.urlencoded({extended: true}));
+bttn.use(bodyParser.urlencoded({ extended: true }));
 
 // Start the server
-bttn.listen(config.port, function () {
-  console.log('app listening on port ' + config.port);
-})
+bttn.listen(config.port, () => {
+  console.log(`App listening on port: ${config.port}`);
+});
 
 // Listen for a post request
-bttn.post('/', function (req, res) {
-
+bttn.post('/', (req, res) => {
+  
   // Debug
-  console.log('Request Received');
+  console.log('You pressed the button!');
 
   // No callback provided
-  if ( req.body.callback === undefined ) {
-    return console.log('Error: No callback URL provided.');
-  }
+  if (req.body.callback === undefined) {
+    console.log('Error: No callback URL provided.');
+  };
 
   // Add the callback to config
   config.callback = req.body.callback;
 
-  // Run the purchase operation
-  return purchase('test', function(data) {
+ // Initialise a start time for the purchase
+  var start = new Date();
+  
+  // Run the purchase function
+  return moltinHelper.purchase()
 
+  .then((res) => {
+      
     // Debug
-    console.log('Purchase Success');
+    if(res === 'err') {
+      console.log('purchase failed');
+    } else {console.log(res);}
 
-    // Setup the response to bt.tn
-    var options = {
-      url: config.callback,
-      method: 'POST',
-      json: true,
-      headers: {'X-Api-Key': config.bttnKey},
-      body: {result: 'success'}
-    };
+    // Calculate the time of execution for the purchase
+    var end = new Date() - start;
+    console.info("Execution time: %dms", end);
 
     // Make the callback request
-    request(options, function(error, response, body) {
-      if ( ! error && response.statusCode == 200 ) {
-        console.log('Callback Success');
-      }
+    request(options, (error, response, body) => {
+      if (!error && response.statusCode === 200) {
+        console.log('Callback Success. Request time in ms is: ' + response.elapsedTime);
+      } else(console.log('callback request failed'));
     });
 
     // Close this request
-    res.setHeader("Connection", "close");
+    res.setHeader('Connection', 'close');
     res.end();
-
-  // Error handler
-  }, function(status, err) {
-    return console.log(err);
-  });
-
+  }).catch((e) => {
+    console.log(e);
+  })
 });
-
-// Moltin handler
-var purchase = function(slug, success, error) {
-
-  // Get a moltin instance
-  var moltin = require('moltin')({publicId: config.publicId, secretKey: config.secretKey});
-
-  // Authenticate
-  moltin.Authenticate(function() {
-
-    // Add the item to a cart
-    moltin.Cart.Insert(config.product, 1, null, function(item) {
-
-      // Create the checkout
-      moltin.Cart.Complete({
-        gateway: 'dummy',
-        customer: config.customer,
-        bill_to: config.address,
-        ship_to: 'bill_to',
-        shipping: 'XXXX'
-      }, function(order) {
-
-        // Run the purchase
-        moltin.Checkout.Payment('purchase', order.id, {data: config.card}, success, error);
-
-      }, error);
-    }, error);
-  }, error);
-
-};
