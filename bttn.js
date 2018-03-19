@@ -9,8 +9,10 @@ const moltinHelper = require('./utils/manual_moltin');
 const { BTTN_API_KEY } = process.env.BTTN_API_KEY;
 const config = {
   port: 3000,
-  callback: undefined
+  callback: undefined,
+  result: undefined
 };
+
 
 // Setup the response to bt.tn
 const options = {
@@ -58,22 +60,36 @@ bttn.post('/', (req, res) => {
   // Run the purchase function
   return moltinHelper.purchase()
 
-  .then((res) => {
+  .then((result) => {
       
     // Debug
-    if(res === 'err') {
+    if(result === 'err') {
       console.log('purchase failed');
-    } else {console.log(res);}
+    } else {
+      console.log(result);
+      config.result = 'success';
+    }
 
     // Calculate the time of execution for the purchase
     var end = new Date() - start;
     console.info("Execution time: %dms", end);
 
+
+    var options = {
+      url: config.callback,
+      headers: {
+        'X-Api-Key': process.env.BTTN_API_KEY
+      },
+      body: JSON.stringify({
+        "result":config.result
+      })
+    };
+
     // Make the callback request
-    request(options, (error, response, body) => {
+    request.post(options, (error, response, body) => {
       if (!error && response.statusCode === 200) {
-        console.log('Callback Success. Request time in ms is: ' + response.elapsedTime);
-      } else(console.log('callback request failed'));
+        console.log('Callback Success.');
+      } else(console.log('callback request failed: ' + error));
     });
 
     // Close this request
