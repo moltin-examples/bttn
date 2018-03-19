@@ -37,7 +37,7 @@ bttn.use(bodyParser.urlencoded({ extended: true }));
 
 // Start the server
 bttn.listen(config.port, () => {
-  console.log(`App listening on port: ${config.port}`);
+  //console.log(`App listening on port: ${config.port}`);
 });
 
 // Listen for a post request
