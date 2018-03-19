@@ -61,7 +61,7 @@ const addToCart = function (productID, quantity) {
 			'type': 'cart_item',
 			'id': productID,
 			'quantity': quantity
-		};
+		}
 	});
 	
 	return new Promise(function(resolve, reject){
@@ -90,7 +90,7 @@ const checkout = function (customer, billing_address, shipping_address) {
 			'customer': customer,
 			'billing_address': billing_address,
 			'shipping_address': shipping_address
-		};
+		}
 	});
 
 	return new Promise(function(resolve, reject){
@@ -123,7 +123,7 @@ const payment = function (orderID, method, gateway, card) {
 			'month': card.month,
 			'year': card.year,
 			'verification_value': card.verification_value,
-		};
+		}
 	});
 	
 	return new Promise(function(resolve, reject){

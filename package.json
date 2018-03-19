@@ -4,7 +4,7 @@
   "description": "",
   "main": "bttn.js",
   "dependencies": {
-    "@moltin/sdk": "^2.2.0",
+    "@moltin/sdk": "^3.5.0",
     "body-parser": "^1.15.2",
     "dotenv": "^4.0.0",
     "express": "^4.14.0",
