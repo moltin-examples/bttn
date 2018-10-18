@@ -5,6 +5,7 @@
   "env": {
     "NODE_ENV": "production",
     "BTTN_API_KEY": "@your-bttn-api-key-goes-here",
-    "MOLTIN_CLIENT_ID": "@your-moltin-client-id-goes-here"
+    "MOLTIN_CLIENT_ID": "@your-moltin-client-id-goes-here",
+     "MOLTIN_PRODUCT_ID": ""
   }
 }
