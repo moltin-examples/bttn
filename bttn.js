@@ -5,14 +5,13 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
-const moltinHelper = require('./utils/manual_moltin');
+const moltinHelper = require('./utils/auto_moltin');
 const { BTTN_API_KEY } = process.env.BTTN_API_KEY;
 const config = {
   port: 3000,
   callback: undefined,
   result: undefined
 };
-
 
 // Setup the response to bt.tn
 const options = {
@@ -44,7 +43,7 @@ bttn.listen(config.port, () => {
 bttn.post('/', (req, res) => {
   
   // Debug
-  console.log('You pressed the button!');
+  console.log('You pressed the button!', req.body);
 
   // No callback provided
   if (req.body.callback === undefined) {
